@@ -1,5 +1,5 @@
 ## Set CMake Minimum Version
-cmake_minimum_required(VERSION 3.24.3)
+cmake_minimum_required(VERSION 3.22.1)
 
 ## C++ Version
 set(CMAKE_CXX_STANDARD 20)
@@ -9,7 +9,8 @@ set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
 
 ## Project Name and Software Version Number
-project(AutonomyThread_Benchmark VERSION 24.02.00 LANGUAGES CXX CUDA)
+project(AutonomyThread_Benchmark VERSION 24.02.00 LANGUAGES CXX)
+set(EXE_NAME "${PROJECT_NAME}")
 
 # Configure BSThreadPool
 add_compile_definitions(BS_THREAD_POOL_ENABLE_PAUSE=1)
@@ -28,14 +29,14 @@ if (LIST_ALL_VARS)
     endforeach()
 endif()
 
+## Find Threads
+find_package(Threads REQUIRED)
+
 ## Search Project Directories for CPP Files
 file(GLOB_RECURSE SRC			  	    CONFIGURE_DEPENDS  "src/*.cpp")
-file(GLOB_RECURSE External_SRC		  	CONFIGURE_DEPENDS  "external/src/*.cpp")
 
 ## Create Executable File
-add_executable(${EXE_NAME}  ${External_SRC}
-						    ${SRC}
-	)
+add_executable(${EXE_NAME} ${SRC})
 
 ## Set Compile Options for program.
 if(MSVC) # True when compiler is Microsoft Visual C++/simulation of Visual C++ CL.

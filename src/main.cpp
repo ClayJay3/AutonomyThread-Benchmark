@@ -1,4 +1,7 @@
-#include <atomic>
+#include "./util/IPS.hpp"
+
+#include <signal.h>
+#include <thread>
 
 // Create a boolean used to handle a SIGINT and exit gracefully.
 volatile sig_atomic_t bMainStop = false;
@@ -10,25 +13,19 @@ volatile sig_atomic_t bMainStop = false;
  * @param nSignal - Integer representing the interrupt value.
  *
  * @author clayjay3 (claytonraycowen@gmail.com)
- * @date 2024-04-19
+ * @date 2024-01-08
  ******************************************************************************/
 void SignalHandler(int nSignal)
 {
     // Check signal type.
     if (nSignal == SIGINT || nSignal == SIGTERM)
     {
-        // Submit logger message.
-        LOG_INFO(logging::g_qSharedLogger, "Ctrl+C or SIGTERM received. Cleaning up...");
-
         // Update stop signal.
         bMainStop = true;
     }
     // The SIGQUIT signal can be sent to the terminal by pressing CNTL+\.
     else if (nSignal == SIGQUIT)
     {
-        // Submit logger message.
-        LOG_INFO(logging::g_qSharedLogger, "Quit signal key pressed. Cleaning up...");
-
         // Update stop signal.
         bMainStop = true;
     }
@@ -40,7 +37,7 @@ void SignalHandler(int nSignal)
  * @return int - Exit status number.
  *
  * @author ClayJay3 (claytonraycowen@gmail.com)
- * @date 2024-04-19
+ * @date 2023-06-20
  ******************************************************************************/
 int main()
 {
@@ -51,6 +48,9 @@ int main()
     sigemptyset(&stSigBreak.sa_mask);
     sigaction(SIGINT, &stSigBreak, nullptr);
     sigaction(SIGQUIT, &stSigBreak, nullptr);
+
+    // Create instance objects.
+    IPS IterPerSecond = IPS();
 
     while (!bMainStop)
     {
