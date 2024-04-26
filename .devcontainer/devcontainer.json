@@ -13,6 +13,7 @@
     // "forwardPorts": [],
     // Use 'postCreateCommand' to run commands after the container is created.
     // "postCreateCommand": "uname -a",
+    "postStartCommand": "git config --global --add safe.directory \"*\"",
     // Configure tool-specific properties.
     // Configure tool-specific properties.
     "customizations": {
@@ -59,7 +60,11 @@
                 "C_Cpp.default.compilerPath": "/usr/bin/g++-12",
                 "C_Cpp.default.cppStandard": "c++20",
                 "C_Cpp.default.includePath": [
-                    "./external/threadpool/include/**"
+                    "./external/threadpool/include/**",
+                    "/usr/local/include/opencv4",
+                    "/usr/local/include/opencv4/**",
+                    "/usr/local/cuda-12.2/include",
+                    "/usr/local/cuda-12.2/include/**"
                 ],
                 // CMAKE extension settings.
                 "cmake.configureOnOpen": true,

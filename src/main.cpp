@@ -1,4 +1,5 @@
-#include "./util/IPS.hpp"
+#include "./benchmarks/PrimeNumbersSingleThread.hpp"
+#include "./benchmarks/PrimeNumbersPooled.hpp"
 
 #include <signal.h>
 #include <thread>
@@ -20,12 +21,16 @@ void SignalHandler(int nSignal)
     // Check signal type.
     if (nSignal == SIGINT || nSignal == SIGTERM)
     {
+        // Print info.
+        std::printf("Handling program abort...\n");
         // Update stop signal.
         bMainStop = true;
     }
     // The SIGQUIT signal can be sent to the terminal by pressing CNTL+\.
     else if (nSignal == SIGQUIT)
     {
+        // Print info.
+        std::printf("Handling program abort...\n");
         // Update stop signal.
         bMainStop = true;
     }
@@ -52,14 +57,12 @@ int main()
     // Create instance objects.
     IPS IterPerSecond = IPS();
 
-    while (!bMainStop)
-    {
-        // Update IPS tick.
-        IterPerSecond.Tick();
+    // TEST 1: Single prime calculator running in different thread.
+    PrimeCalculatorThreadSingleThreaded PrimeCalculator = PrimeCalculatorThreadSingleThreaded();
 
-        // No need to loop as fast as possible. Sleep...
-        std::this_thread::sleep_for(std::chrono::milliseconds(60));
-    }
+    PrimeCalculator.SetPrimeCount(100);
+    PrimeCalculator.Start();
+    PrimeCalculator.Join();
 
     /////////////////////////////////////////
     // Cleanup.

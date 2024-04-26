@@ -6,7 +6,9 @@
  *
  * @file AutonomyThread.h
  * @author ClayJay3 (claytonraycowen@gmail.com)
- * @date 2024-04-19
+ * @date 2023-07-16
+ *
+ * @copyright Copyright Mars Rover Design Team 2023 - All Rights Reserved
  ******************************************************************************/
 
 #ifndef AUTONOMYTHREAD_H
@@ -29,7 +31,7 @@
  * @tparam T - Variable return type of internal pooled code.
  *
  * @author ClayJay3 (claytonraycowen@gmail.com)
- * @date 2024-04-19
+ * @date 2023-07-27
  ******************************************************************************/
 template <class T>
 class AutonomyThread
@@ -56,7 +58,7 @@ public:
      *
      *
      * @author clayjay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-12-30
      ******************************************************************************/
     AutonomyThread()
     {
@@ -74,7 +76,7 @@ public:
      *
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-23
      ******************************************************************************/
     virtual ~AutonomyThread()
     {
@@ -110,7 +112,7 @@ public:
      * @note This method will block until the thread state is eRunning.
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-22
      ******************************************************************************/
     void Start()
     {
@@ -157,7 +159,7 @@ public:
      *
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-22
      ******************************************************************************/
     void RequestStop()
     {
@@ -173,7 +175,7 @@ public:
      *
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-22
      ******************************************************************************/
     void Join()
     {
@@ -194,7 +196,7 @@ public:
      * @return false - The thread is still running code.
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-22
      ******************************************************************************/
     bool Joinable() const
     {
@@ -217,7 +219,7 @@ public:
      * @return AutonomyThreadState - The current state of the main thread.
      *
      * @author clayjay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2024-01-08
      ******************************************************************************/
     AutonomyThreadState GetThreadState() const { return m_eThreadState; }
 
@@ -227,7 +229,7 @@ public:
      * @return IPS& - The iteration per second counter for the ThreadedContinuousCode()
      *
      * @author clayjay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-08-20
      ******************************************************************************/
     IPS &GetIPS() { return m_IPS; }
 
@@ -267,16 +269,13 @@ protected:
      *                                  tasks to stop before queueing more.
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-23
      ******************************************************************************/
     void RunPool(const unsigned int nNumTasksToQueue, const unsigned int nNumThreads = 2, const bool bForceStopCurrentThreads = false)
     {
         // Check if the pools need to be resized.
         if (m_thPool.get_thread_count() != nNumThreads)
         {
-            // Tell any open thread to stop.
-            m_bStopThreads = true;
-
             // Pause queuing of new tasks to the threads, then purge them.
             m_thPool.pause();
             m_thPool.purge();
@@ -287,15 +286,10 @@ protected:
 
             // Clear results vector.
             m_vPoolReturns.clear();
-            // Reset thread stop toggle.
-            m_bStopThreads = false;
         }
         // Check if the current pool tasks should be stopped before queueing more tasks.
         else if (bForceStopCurrentThreads)
         {
-            // Tell any open thread to stop.
-            m_bStopThreads = true;
-
             // Pause queuing of new tasks to the threads, then purge them.
             m_thPool.pause();
             m_thPool.purge();
@@ -303,9 +297,6 @@ protected:
             m_thPool.wait();
             // Unpause queue.
             m_thPool.unpause();
-
-            // Reset stop toggle.
-            m_bStopThreads = false;
         }
 
         // Loop nNumThreads times and queue tasks.
@@ -350,16 +341,13 @@ protected:
      *                                  tasks to stop before queueing more.
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-23
      ******************************************************************************/
     void RunDetachedPool(const unsigned int nNumTasksToQueue, const unsigned int nNumThreads = 2, const bool bForceStopCurrentThreads = false)
     {
         // Check if the pools need to be resized.
         if (m_thPool.get_thread_count() != nNumThreads)
         {
-            // Tell any open thread to stop.
-            m_bStopThreads = true;
-
             // Pause queuing of new tasks to the threads, then purge them.
             m_thPool.pause();
             m_thPool.purge();
@@ -370,15 +358,10 @@ protected:
 
             // Clear results vector.
             m_vPoolReturns.clear();
-            // Reset thread stop toggle.
-            m_bStopThreads = false;
         }
         // Check if the current pool tasks should be stopped before queueing more tasks.
         else if (bForceStopCurrentThreads)
         {
-            // Tell any open thread to stop.
-            m_bStopThreads = true;
-
             // Pause queuing of new tasks to the threads, then purge them.
             m_thPool.pause();
             m_thPool.purge();
@@ -386,9 +369,6 @@ protected:
             m_thPool.wait();
             // Unpause queue.
             m_thPool.unpause();
-
-            // Reset stop toggle.
-            m_bStopThreads = false;
         }
 
         // Loop nNumThreads times and queue tasks.
@@ -428,7 +408,7 @@ protected:
      *
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-26
      ******************************************************************************/
     template <typename N, typename F>
     void ParallelizeLoop(const int nNumThreads, const N tTotalIterations, F &&tLoopFunction)
@@ -436,11 +416,12 @@ protected:
         // Create new thread pool.
         BS::thread_pool m_thLoopPool = BS::thread_pool(nNumThreads);
 
-        m_thLoopPool.detach_blocks(tTotalIterations,
-                                   [&tLoopFunction](const int a, const int b)
+        m_thLoopPool.detach_blocks(0,
+                                   tTotalIterations,
+                                   [&tLoopFunction](const int nStart, const int nEnd)
                                    {
                                        // Call loop function without lock.
-                                       tLoopFunction(a, b);
+                                       tLoopFunction(nStart, nEnd);
                                    });
 
         // Wait for loop to finish.
@@ -453,7 +434,7 @@ protected:
      *
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-09-09
      ******************************************************************************/
     void ClearPoolQueue() { m_thPool.purge(); }
 
@@ -463,7 +444,7 @@ protected:
      *
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-22
      ******************************************************************************/
     void JoinPool() { m_thPool.wait(); }
 
@@ -475,7 +456,7 @@ protected:
      * @return false - The thread is still running code.
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-22
      ******************************************************************************/
     bool PoolJoinable() const
     {
@@ -500,7 +481,7 @@ protected:
      * @note - Set to zero to disable the max iteration per second limit.
      *
      * @author clayjay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-12-30
      ******************************************************************************/
     void SetMainThreadIPSLimit(int nMaxIterationsPerSecond = 0)
     {
@@ -514,7 +495,7 @@ protected:
      * @return int - The number of threads available to the pool.
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-09-09
      ******************************************************************************/
     int GetPoolNumOfThreads() { return m_thPool.get_thread_count(); }
 
@@ -524,7 +505,7 @@ protected:
      * @return int - The number of tasks queued for the pool.
      *
      * @author clayjay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2024-03-14
      ******************************************************************************/
     int GetPoolQueueLength() { return m_thPool.get_tasks_queued(); }
 
@@ -538,7 +519,7 @@ protected:
      *                      ran the PooledLinearCode.
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-26
      ******************************************************************************/
     std::vector<T> GetPoolResults()
     {
@@ -564,7 +545,7 @@ protected:
      * @return int - The max iterations per second the main thread can reach.
      *
      * @author clayjay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-12-31
      ******************************************************************************/
     int GetMainThreadMaxIPS() const
     {
@@ -604,7 +585,7 @@ private:
      * @param bStopThread - Atomic shared variable that signals the thread to stop iterating.
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2024-04-19
+     * @date 2023-07-24
      ******************************************************************************/
     void RunThread(std::atomic_bool &bStopThread)
     {
