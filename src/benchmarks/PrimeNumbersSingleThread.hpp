@@ -32,6 +32,8 @@ private:
     std::vector<int> m_vThreadPrimes;
     int m_nCount = 10;
     int m_nCurrentCount = 2;
+    double m_dCalculationTime = -1.0;
+    std::chrono::system_clock::time_point m_tmStartTime = std::chrono::system_clock::time_point::min();
 
     /******************************************************************************
      * @brief Check if a number if prime.
@@ -43,7 +45,8 @@ private:
      * @author ClayJay3 (claytonraycowen@gmail.com)
      * @date 2023-07-22
      ******************************************************************************/
-    bool IsPrime(int &nNum)
+    bool
+    IsPrime(int &nNum)
     {
         if (nNum <= 1)
         {
@@ -93,6 +96,9 @@ private:
      ******************************************************************************/
     void ThreadedContinuousCode() override
     {
+        // Measure the amount of time it takes to run this code.
+        if (m_tmStartTime == std::chrono::system_clock::time_point::min())
+            m_tmStartTime = std::chrono::system_clock::now();
         // Change this to calculate a different number of prime numbers.
         CalculatePrimes(m_nCount);
 
@@ -101,6 +107,10 @@ private:
         {
             // Call thread stop.
             this->RequestStop();
+            // Store end time.
+            std::chrono::system_clock::time_point tmEndTime = std::chrono::system_clock::now();
+            // Calculate elapsed time.
+            m_dCalculationTime = std::chrono::duration_cast<std::chrono::microseconds>(tmEndTime - m_tmStartTime).count();
         }
     }
 
@@ -149,11 +159,31 @@ public:
     std::vector<int> GetPrimes() { return m_vThreadPrimes; }
 
     /******************************************************************************
+     * @brief Accessor for the Calculation Time private member.
+     *
+     * @return double - The total time in microseconds that is took to fully calculate the
+     *          set number of primes.
+     *
+     * @author ClayJay3 (claytonraycowen@gmail.com)
+     * @date 2024-04-26
+     ******************************************************************************/
+    double GetCalculationTime() { return m_dCalculationTime; }
+
+    /******************************************************************************
      * @brief Clears the prime results vector.
      *
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
      * @date 2023-07-25
      ******************************************************************************/
-    void ClearPrimes() { m_vThreadPrimes.clear(); }
+    void ClearPrimes()
+    {
+        // Clear number vector.
+        m_vThreadPrimes.clear();
+        // Reset other vars.
+        m_nCurrentCount = 2;
+        m_dCalculationTime = -1.0;
+        // Reset start time.
+        m_tmStartTime = std::chrono::system_clock::time_point::min();
+    }
 };

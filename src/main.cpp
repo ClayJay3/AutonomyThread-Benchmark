@@ -57,12 +57,64 @@ int main()
     // Create instance objects.
     IPS IterPerSecond = IPS();
 
+    /////////////////////////////////////////
     // TEST 1: Single prime calculator running in different thread.
-    PrimeCalculatorThreadSingleThreaded PrimeCalculator = PrimeCalculatorThreadSingleThreaded();
+    /////////////////////////////////////////
+    PrimeCalculatorThreadSingleThreaded PrimeCalculatorTEST1 = PrimeCalculatorThreadSingleThreaded();
+    PrimeCalculatorTEST1.SetPrimeCount(99999);
 
-    PrimeCalculator.SetPrimeCount(100);
-    PrimeCalculator.Start();
-    PrimeCalculator.Join();
+    // For calculating average time.
+    double dTotalMicroseconds100Runs = 0.0;
+    // Run test 100 times.
+    for (int nIter = 0; nIter < 1; ++nIter)
+    {
+        // Run thread.
+        PrimeCalculatorTEST1.Start();
+        PrimeCalculatorTEST1.Join();
+        // Add time taken to total.
+        dTotalMicroseconds100Runs += PrimeCalculatorTEST1.GetCalculationTime();
+        // Reset member variables for prime calculator.
+        PrimeCalculatorTEST1.ClearPrimes();
+    }
+    // Run thread.
+    PrimeCalculatorTEST1.Start();
+    PrimeCalculatorTEST1.Join();
+    // Print TEST1 info.
+    std::cout << "AVERAGE Single Thread Primes Calculation Time: " << dTotalMicroseconds100Runs / 1e6 << " s" << std::endl;
+    // // Print out primes list.
+    // for (int nPrime : PrimeCalculatorTEST1.GetPrimes())
+    // {
+    //     std::cout << nPrime << " ";
+    // }
+    // std::cout << std::endl;
+
+    /////////////////////////////////////////
+    // TEST 2: Thread pool individually calculating primes.
+    /////////////////////////////////////////
+    PrimeCalculatorThreadPooled PrimeCalculatorTEST2 = PrimeCalculatorThreadPooled();
+    PrimeCalculatorTEST2.SetPrimeCount(99999);
+    // For calculating average time.
+    dTotalMicroseconds100Runs = 0.0;
+    // Run test 100 times.
+    for (int nIter = 0; nIter < 1; ++nIter)
+    {
+        // Reset member variables for prime calculator.
+        PrimeCalculatorTEST2.ClearPrimes();
+        // Run thread.
+        PrimeCalculatorTEST2.Start();
+        // Wait for calculator to finish.
+        PrimeCalculatorTEST2.Join();
+        // Add time taken to total.
+        dTotalMicroseconds100Runs += PrimeCalculatorTEST2.GetCalculationTime();
+    }
+    // Print TEST1 info.
+    std::cout << "\nAVERAGE Pooled Thread Primes Calculation Time: " << dTotalMicroseconds100Runs / 1e6 << " s" << std::endl;
+    // // Print out primes list.
+    // for (int nPrime : PrimeCalculatorTEST2.GetPrimes())
+    // {
+    //     std::cout << nPrime << " ";
+    // }
+    // std::cout << std::endl;
 
     /////////////////////////////////////////
     // Cleanup.

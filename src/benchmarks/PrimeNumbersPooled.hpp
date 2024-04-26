@@ -14,6 +14,7 @@
 /// \cond
 #include <iostream>
 #include <vector>
+#include <shared_mutex>
 
 /// \endcond
 
@@ -32,8 +33,10 @@ private:
     std::vector<int> m_vThreadPrimes;
     int m_nCount = 10;
     int m_nCurrentCount = 2;
-    std::condition_variable &m_cdStartCondition;
-    std::mutex &m_muConditionMutex;
+    double m_dCalculationTime = -1.0;
+    std::chrono::system_clock::time_point m_tmStartTime = std::chrono::system_clock::time_point::min();
+    std::shared_mutex m_muVectorWriteMutex;
+    std::shared_mutex m_muCurrentCountWriteMutex;
 
     /******************************************************************************
      * @brief Check if a number if prime.
@@ -45,8 +48,7 @@ private:
      * @author ClayJay3 (claytonraycowen@gmail.com)
      * @date 2023-07-22
      ******************************************************************************/
-    bool
-    IsPrime(int &nNum)
+    bool IsPrime(int &nNum)
     {
         if (nNum <= 1)
         {
@@ -64,30 +66,6 @@ private:
     }
 
     /******************************************************************************
-     * @brief Calculate 'count' number of primes.
-     *
-     * @param nCount - The number of primes to calculate.
-     *
-     * @author ClayJay3 (claytonraycowen@gmail.com)
-     * @date 2023-07-22
-     ******************************************************************************/
-    void CalculatePrimes(int &nCount)
-    {
-        // Loop until we have the required amount of primes.
-        if (int(m_vThreadPrimes.size()) < nCount)
-        {
-            // Check if our current number is a prime.
-            if (IsPrime(m_nCurrentCount))
-            {
-                m_vThreadPrimes.push_back(m_nCurrentCount);
-            }
-
-            // Increment counter.
-            ++m_nCurrentCount;
-        }
-    }
-
-    /******************************************************************************
      * @brief This code will run in a separate thread. Main code goes here.
      *
      *
@@ -96,17 +74,16 @@ private:
      ******************************************************************************/
     void ThreadedContinuousCode() override
     {
-        // Wait for start variable to be triggered.
-
-        // Change this to calculate a different number of prime numbers.
-        CalculatePrimes(m_nCount);
-
-        // Check if we have reached the desired number of primes.
-        if (int(this->GetPrimes().size()) >= this->GetDesiredPrimeAmount())
-        {
-            // Call thread stop.
-            this->RequestStop();
-        }
+        // Start a thread pool with 100 threads. This will run the code in the PooledLinearCode() method.
+        this->RunDetachedPool(m_nCount, 100);
+        // Wait for Pool to finish.
+        this->JoinPool();
+        // Store end time.
+        std::chrono::system_clock::time_point tmEndTime = std::chrono::system_clock::now();
+        // Calculate elapsed time.
+        m_dCalculationTime = std::chrono::duration_cast<std::chrono::microseconds>(tmEndTime - m_tmStartTime).count();
+        // Request stop of main thread.
+        this->RequestStop();
     }
 
     /******************************************************************************
@@ -117,14 +94,42 @@ private:
      * @author ClayJay3 (claytonraycowen@gmail.com)
      * @date 2023-07-25
      ******************************************************************************/
-    void PooledLinearCode() override {}
+    void PooledLinearCode() override
+    {
+        // Create instance variables.
+        bool bFoundPrime = false;
+        // Measure the amount of time it takes to run this code.
+        if (m_tmStartTime == std::chrono::system_clock::time_point::min())
+            m_tmStartTime = std::chrono::system_clock::now();
+
+        // Continue working until this thread finds 1 prime.
+        while (!bFoundPrime)
+        {
+            // Acquire write lock to current count.
+            std::unique_lock<std::shared_mutex> lkWriteLockCount(m_muCurrentCountWriteMutex);
+            // Get current count number.
+            int nCurrentPrimeTestNumber = m_nCurrentCount;
+            // Increment count, this pool thead has the current number.
+            ++m_nCurrentCount;
+            // Release lock.
+            lkWriteLockCount.unlock();
+
+            // Check if number is prime.
+            if (this->IsPrime(nCurrentPrimeTestNumber))
+            {
+                // Acquire write lock for prime vector.
+                std::unique_lock<std::shared_mutex> lkWriteLockVector(m_muVectorWriteMutex);
+                // Append new prime number to vector.
+                m_vThreadPrimes.emplace_back(nCurrentPrimeTestNumber);
+                // Set toggle to stop looping.
+                bFoundPrime = true;
+            }
+        }
+    }
 
 public:
     // Declare and define public methods and variables.
-    PrimeCalculatorThreadPooled(std::condition_variable &cdStartCondition, std::mutex &muConditionMutex) : m_cdStartCondition(cdStartCondition), m_muConditionMutex(muConditionMutex)
-    {
-        // Nothing to do.
-    }
+    PrimeCalculatorThreadPooled() = default;
 
     /******************************************************************************
      * @brief Mutator for the Prime Count private member
@@ -157,11 +162,31 @@ public:
     std::vector<int> GetPrimes() { return m_vThreadPrimes; }
 
     /******************************************************************************
+     * @brief Accessor for the Calculation Time private member.
+     *
+     * @return double - The total time in microseconds that is took to fully calculate the
+     *          set number of primes.
+     *
+     * @author ClayJay3 (claytonraycowen@gmail.com)
+     * @date 2024-04-26
+     ******************************************************************************/
+    double GetCalculationTime() { return m_dCalculationTime; }
+
+    /******************************************************************************
      * @brief Clears the prime results vector.
      *
      *
      * @author ClayJay3 (claytonraycowen@gmail.com)
      * @date 2023-07-25
      ******************************************************************************/
-    void ClearPrimes() { m_vThreadPrimes.clear(); }
+    void ClearPrimes()
+    {
+        // Clear number vector.
+        m_vThreadPrimes.clear();
+        // Reset other vars.
+        m_nCurrentCount = 2;
+        m_dCalculationTime = -1.0;
+        // Reset start time.
+        m_tmStartTime = std::chrono::system_clock::time_point::min();
+    }
 };
