@@ -106,19 +106,19 @@ private:
         while (!bFoundPrime)
         {
             // Acquire write lock to current count.
-            std::unique_lock<std::shared_mutex> lkWriteLockCount(m_muCurrentCountWriteMutex);
+            // std::unique_lock<std::shared_mutex> lkWriteLockCount(m_muCurrentCountWriteMutex);
             // Get current count number.
             int nCurrentPrimeTestNumber = m_nCurrentCount;
             // Increment count, this pool thead has the current number.
             ++m_nCurrentCount;
             // Release lock.
-            lkWriteLockCount.unlock();
+            // lkWriteLockCount.unlock();
 
             // Check if number is prime.
             if (this->IsPrime(nCurrentPrimeTestNumber))
             {
                 // Acquire write lock for prime vector.
-                std::unique_lock<std::shared_mutex> lkWriteLockVector(m_muVectorWriteMutex);
+                // std::unique_lock<std::shared_mutex> lkWriteLockVector(m_muVectorWriteMutex);
                 // Append new prime number to vector.
                 m_vThreadPrimes.emplace_back(nCurrentPrimeTestNumber);
                 // Set toggle to stop looping.
