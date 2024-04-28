@@ -83,47 +83,6 @@
                     ".devcontainer",
                     "README.md"
                 ],
-                // Doxygen Document Generator extension settings.
-                "doxdocgen.c.firstLine": "/******************************************************************************",
-                "doxdocgen.c.lastLine": "******************************************************************************/",
-                "doxdocgen.c.triggerSequence": "/**",
-                "doxdocgen.c.getterText": "Accessor for the {name} private member.",
-                "doxdocgen.c.setterText": "Mutator for the {name} private member",
-                "doxdocgen.cpp.ctorText": "Construct a new {name} object.",
-                "doxdocgen.cpp.dtorText": "Destroy the {name} object.",
-                "doxdocgen.cpp.tparamTemplate": "@tparam {param} - ",
-                "doxdocgen.file.fileTemplate": "@file {name}",
-                "doxdocgen.generic.paramTemplate": "@param {param} - ",
-                "doxdocgen.generic.returnTemplate": "@return {type} - ",
-                "doxdocgen.generic.authorEmail": "",
-                "doxdocgen.generic.authorName": "",
-                "doxdocgen.generic.briefTemplate": "@brief {text}",
-                "doxdocgen.generic.dateFormat": "YYYY-MM-DD",
-                "doxdocgen.generic.dateTemplate": "@date {date}",
-                "doxdocgen.file.copyrightTag": [
-                    "@copyright Copyright Mars Rover Design Team {year} - All Rights Reserved"
-                ],
-                // The order to use for the file comment.
-                "doxdocgen.file.fileOrder": [
-                    "brief",
-                    "empty",
-                    "file",
-                    "author",
-                    "date",
-                    "empty",
-                    "copyright"
-                ],
-                // The order to use for the comment generation.
-                "doxdocgen.generic.order": [
-                    "brief",
-                    "empty",
-                    "tparam",
-                    "param",
-                    "return",
-                    "empty",
-                    "author",
-                    "date"
-                ],
                 // Todo Tree Extention Settings
                 "todo-tree.filtering.excludeGlobs": [
                     "**/CONTRIBUTING.md"
