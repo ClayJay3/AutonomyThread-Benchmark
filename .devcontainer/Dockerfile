@@ -34,19 +34,5 @@ RUN apt-get install  --no-install-recommends -y \
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100 --slave /usr/bin/g++ \
     g++ /usr/bin/g++-12 --slave /usr/bin/gcov gcov /usr/bin/gcov-12
 
-# Install CMake
-ARG CMAKE_VERSION="3.27.9"
-COPY install-cmake.sh /tmp/
-RUN if [ "${CMAKE_VERSION}" != "none" ]; then \
-    chmod +x /tmp/install-cmake.sh && /tmp/install-cmake.sh ${CMAKE_VERSION}; \
-    fi && \
-    rm -f /tmp/install-cmake.sh
-
 # Set Working Directory
 WORKDIR /opt
-
-# Install prebuilt OpenCV.
-ARG OPENCV_VERSION="4.9.0"
-RUN wget -q https://github.com/MissouriMRDT/Autonomy_Packages/raw/main/opencv/amd64/opencv_${OPENCV_VERSION}_amd64.deb && \
-    dpkg -i opencv_${OPENCV_VERSION}_amd64.deb && \
-    rm opencv_${OPENCV_VERSION}_amd64.deb
